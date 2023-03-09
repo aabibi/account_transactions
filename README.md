@@ -62,6 +62,7 @@ http://localhost:8082/swagger-ui.html
 **Endpoints**
 
 POST /transactions: creates a new transaction
+
 GET /transactions/{transactionId}: retrieves a transaction by ID
 
 
