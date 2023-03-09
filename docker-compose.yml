@@ -1,0 +1,83 @@
+---
+version: '3'
+
+services:
+  mysql-account:
+    stdin_open: true
+    tty: true
+    image: mysql:8.0.31
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=account-service
+      - MYSQL_PASSWORD=abibi
+      - MYSQL_USER=armel
+    restart: unless-stopped
+    ports:
+      - "3399:3306"
+  mysql-transaction:
+    stdin_open: true
+    tty: true
+    image: mysql:8.0.31
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=transaction-service
+      - MYSQL_PASSWORD=abibi
+      - MYSQL_USER=armel
+    restart: unless-stopped
+    ports:
+      - "3400:3306"
+
+  ## Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  ## Eureka Server
+  discovery-server:
+    image: meldroz/discovery-server:latest
+    container_name: discovery-server
+    pull_policy: always
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - zipkin
+
+  ## Order-Service Docker Compose Config
+  transaction-service:
+    container_name: transaction-service
+    image: meldroz/transaction-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-transaction:3306/transaction-service
+    ports:
+      - "8082:8082"
+    expose:
+      - "8082"
+    depends_on:
+      - mysql-transaction
+      - zipkin
+      - discovery-server
+
+  ## Inventory-Service Docker Compose Config
+  account-service:
+    container_name: customer-service
+    image: meldroz/customer-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-account:3306/account-service
+    ports:
+      - "8081:8081"
+    expose:
+      - "8081"
+    depends_on:
+      - mysql-account
+      - discovery-server
+
+
+
