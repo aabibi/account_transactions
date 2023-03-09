@@ -73,6 +73,7 @@ Once accounts are created , you can make transactions based on the requirement a
 the request. If the request pass all the validation, only then do we create a transaction.
 
 **Validations**
+
 Operation/Transaction Type
 1-PURCHASE
 2-INSTALLMENT PURCHASE
