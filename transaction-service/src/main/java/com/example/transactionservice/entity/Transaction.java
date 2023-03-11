@@ -1,6 +1,7 @@
 package com.example.transactionservice.entity;
 
 
+import com.example.transactionservice.entity.model.TransactionMessage;
 import com.example.transactionservice.entity.model.TransactionRequest;
 import com.example.transactionservice.util.Utils;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,13 @@ public class Transaction {
         this.setAmount(request.getAmount());
         this.setTransactionType(Utils.validateTransactionType(request.getOperation_type()));
         this.setAccountID(request.getAccountId());
+        this.setEventDate(LocalDateTime.now());
+    }
+
+    public Transaction(TransactionMessage responseMessage) {
+        this.setAmount(responseMessage.getAmount());
+        this.setTransactionType(Utils.validateTransactionType(responseMessage.getOperation_type()));
+        this.setAccountID(responseMessage.getAccountId());
         this.setEventDate(LocalDateTime.now());
     }
 }

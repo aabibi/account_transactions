@@ -1,11 +1,13 @@
 package com.example.transactionservice.service;
 
 
+import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,14 +27,11 @@ public class TransactionService {
 
         Optional<Transaction> transaction =  transactionRepository.findById(transactionID);
         return  transaction.orElse(null);
-
     }
-
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Transaction addTransaction(Transaction transaction) {
-        Transaction transaction1 =  transactionRepository.save(transaction);
-        return  transaction1;
+        return transactionRepository.save(transaction);
 
     }
 

@@ -27,4 +27,11 @@ public class TransactionResponse {
         this.operation_type = transaction.getTransactionType().getTransaction_type();
         this.transactionId  = transaction.getTransactionID();
     }
+
+    public TransactionResponse(TransactionMessage responseMessage) {
+
+        this.account_Id =responseMessage.getAccountId();
+        this.amount = responseMessage.getAmount();
+        this.operation_type = responseMessage.getOperation_type();
+    }
 }
