@@ -1,15 +1,60 @@
 package com.example.transactionservice.entity.model;
 
+import com.example.transactionservice.entity.Status;
+import com.example.transactionservice.entity.Transaction;
+import com.example.transactionservice.util.Utils;
+
 import java.math.BigDecimal;
 
 public class TransactionMessage {
 
+
+    private long transactionId;
     private long accountId;
     private int operation_type;
     private BigDecimal amount;
     private int status;
 
+    private int  transactionStatus;
+
     private String errorReason;
+
+
+    private long version;
+
+    public TransactionMessage(Transaction transaction) {
+        this.setTransactionId(transaction.getTransactionID());
+        this.setTransactionStatus(transaction.getTransactionStatus());
+        this.setStatus(transaction.getTransactionStatus());
+        this.setAmount(transaction.getAmount());
+        this.setOperation_type(transaction.getTransactionType());
+        this.setAccountId(transaction.getAccountID());
+        this.setVersion(transaction.getVersion());
+    }
+
+    public int getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public void setTransactionStatus(int transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
+
+    public long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(long transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
 
     public String getErrorReason() {
         return errorReason;

@@ -1,7 +1,8 @@
-package com.example.transactionservice.exception;
+package com.example.customerservice.exception;
 
 
 
+import com.example.customerservice.entity.model.ErrorResponse;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -58,20 +59,31 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserNotFoundError(
             Exception ex, WebRequest request) {
         HttpStatus httpStatus = HttpStatus.NOT_FOUND;
-        ErrorResponse errorResponse = buildErrorResponse(ex, "User not found for based on requested input.",httpStatus, false);
+        ErrorResponse errorResponse = buildErrorResponse(ex, "Account not found  based on requested input.",httpStatus, false);
         ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, httpStatus);
     }
 
 
-    @ExceptionHandler(TransactionFoundException.class)
+    @ExceptionHandler(InssuficientBalanceUpdateException.class)
     public ResponseEntity<ErrorResponse> handleInvalidUserError(
             Exception ex, WebRequest request) {
         HttpStatus httpStatus = HttpStatus.NOT_FOUND;
-        ErrorResponse errorResponse = buildErrorResponse(ex, "Transaction failed.",httpStatus, false);
+        ErrorResponse errorResponse = buildErrorResponse(ex, "Transactions failed, not enough money to complete this.\"",httpStatus, false);
         ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, httpStatus);
     }
+
+
+    @ExceptionHandler(InvalidNegativeBalanceUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidNegativeBalance(
+            Exception ex, WebRequest request) {
+        HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+        ErrorResponse errorResponse = buildErrorResponse(ex, "Purchase/Installment Purchase/Withdrawal must be of negative amount.\"",httpStatus, false);
+        ex.printStackTrace();
+        return new ResponseEntity<>(errorResponse, httpStatus);
+    }
+
 
 
 

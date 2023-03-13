@@ -24,7 +24,7 @@ public class TransactionResponse {
 
         this.account_Id =transaction.getAccountID();
         this.amount = transaction.getAmount();
-        this.operation_type = transaction.getTransactionType().getTransaction_type();
+        this.operation_type = transaction.getTransactionType();
         this.transactionId  = transaction.getTransactionID();
     }
 

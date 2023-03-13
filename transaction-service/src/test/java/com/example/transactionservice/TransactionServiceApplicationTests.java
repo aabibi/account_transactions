@@ -1,5 +1,6 @@
 package com.example.transactionservice;
 
+import com.example.transactionservice.entity.Status;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.entity.TransactionType;
 import com.example.transactionservice.service.TransactionService;
@@ -24,9 +25,10 @@ class TransactionServiceApplicationTests {
 
     Transaction transaction  = new Transaction();
     transaction.setAccountID(1L);
-    transaction.setTransactionType(TransactionType.INSTALLMENT_PURCHASE);
+    transaction.setTransactionType(TransactionType.INSTALLMENT_PURCHASE.getTransaction_type());
     transaction.setEventDate(LocalDateTime.now());
     transaction.setAmount(BigDecimal.valueOf(50.37));
+    transaction.setTransactionStatus(Status.POSTED.getStatus_type());
     transactionService.addTransaction(transaction);
 
     Assertions.assertEquals(1L, transactionService.getTransaction(1L).getTransactionID());

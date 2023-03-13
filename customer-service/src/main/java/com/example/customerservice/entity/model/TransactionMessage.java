@@ -7,7 +7,10 @@ public class TransactionMessage {
     private long accountId;
     private int operation_type;
     private BigDecimal amount;
-    private int status;
+
+    private  long transactionId;
+
+    private int transactionStatus;
 
     private String errorReason;
 
@@ -43,11 +46,19 @@ public class TransactionMessage {
         this.amount = amount;
     }
 
-    public int getStatus() {
-        return status;
+    public int getTransactionStatus() {
+        return transactionStatus;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setTransactionStatus(int transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
+
+    public long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(long transactionId) {
+        this.transactionId = transactionId;
     }
 }

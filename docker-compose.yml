@@ -52,6 +52,11 @@ services:
     image: meldroz/transaction-service:latest
     pull_policy: always
     environment:
+      - cloud.aws.credentials.accessKey=AKIASZUPRZXLD6DI5NES
+      - cloud.aws.credentials.secretKey=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
+      - cloud.aws.region.static=us-east-1
+      - sqs.account.url=account-queue
+      - sqs.transaction.url=transaction-queue
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-transaction:3306/transaction-service
     ports:
@@ -59,6 +64,7 @@ services:
     expose:
       - "8082"
     depends_on:
+      - sqs
       - mysql-transaction
       - zipkin
       - discovery-server
@@ -69,6 +75,11 @@ services:
     image: meldroz/customer-service:latest
     pull_policy: always
     environment:
+      - cloud.aws.credentials.accessKey=AKIASZUPRZXLD6DI5NES
+      - cloud.aws.credentials.secretKey=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
+      - cloud.aws.region.static=us-east-1
+      - sqs.account.url=account-queue
+      - sqs.transaction.url=transaction-queue
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-account:3306/account-service
     ports:
@@ -76,8 +87,19 @@ services:
     expose:
       - "8081"
     depends_on:
+      - sqs
       - mysql-account
       - discovery-server
 
-
+  sqs:
+    image: vsouza/sqs-local:latest
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: AKIASZUPRZXLD6DI5NES
+      AWS_SECRET_ACCESS_KEY: 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
+    command: >
+      sh -c "
+        aws sqs create-queue --queue-name transaction-queue &&
+        aws sqs create-queue --queue-name account-queue &&
+        sleep 5"
 

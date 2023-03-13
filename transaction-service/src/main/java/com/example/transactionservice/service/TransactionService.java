@@ -2,6 +2,7 @@ package com.example.transactionservice.service;
 
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.example.transactionservice.entity.Status;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
@@ -35,5 +36,17 @@ public class TransactionService {
 
     }
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void deleteTransaction(Transaction transaction) {
+         transactionRepository.delete(transaction);
+
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void updateTransactionStatus(Transaction transaction, Status status) {
+        transaction.setTransactionStatus(status.getStatus_type());
+        transactionRepository.save(transaction);
+
+    }
 
 }

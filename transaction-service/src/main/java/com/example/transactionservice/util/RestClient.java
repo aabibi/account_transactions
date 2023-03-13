@@ -39,7 +39,7 @@ public class RestClient {
         this.restTemplate = restTemplate;
     }
 
-    public AccountResponse getAccountById(long accountId) {
+    public AccountResponse getAccountById(long accountId) throws Exception {
 
 
       //  Span inventoryServiceLookup = tracer.nextSpan().name("AccountServiceLookup");
@@ -48,6 +48,7 @@ public class RestClient {
 
   //         inventoryServiceLookup.tag("call", "account-service");
 
+        try {
             Map<String, Long> params = new HashMap<>();
             params.put("accountId", accountId);
 
@@ -57,6 +58,12 @@ public class RestClient {
             //         .retrieve().bodyToMono(AccountResponse.class).block();
 
             return result;
+        } catch (Exception e) {
+
+            throw  new Exception(e.getMessage());
+
+        }
+
        /* }
         finally {
             inventoryServiceLookup.flush();
