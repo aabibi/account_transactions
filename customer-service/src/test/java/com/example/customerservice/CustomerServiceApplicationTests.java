@@ -5,19 +5,11 @@ import com.example.customerservice.entity.Account;
 import com.example.customerservice.entity.model.AccountRequest;
 import com.example.customerservice.entity.model.AccountResponse;
 import com.example.customerservice.entity.model.UpdateBalanceRequest;
-import com.example.customerservice.exception.UserNotFoundException;
 import com.example.customerservice.service.AccountService;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +17,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.yaml.snakeyaml.emitter.Emitter;
 
 
 import java.math.BigDecimal;
@@ -91,25 +82,23 @@ class CustomerServiceApplicationTests {
     @Test
     void testGetAccountByDocumentNumberFailed() {
 
-        Assertions.assertNull(accountService.getUserByDocumentNumber(12345L));
+        Assertions.assertNull(accountService.getUserByDocumentNumber(0L));
     }
 
 
     @Test
     void testGetAccountByDocumentNumberSuccess() {
 
-        Account user = new Account();
-        user.setDocument_number(1987L);
-        user.setAccountMoney(BigDecimal.valueOf(50.00));
-        accountService.addAccount(user);
-
-        Assertions.assertNotNull(accountService.getUserByDocumentNumber(1987L));
+        Assertions.assertNotNull(accountService.getUserByDocumentNumber(12345L));
     }
 
     @Test
     void testGetUserFailed() {
 
-        restTemplate.getForObject(getRootUrl() + "/accounts/9999999", Account.class);
+        AccountResponse postResponse = restTemplate.getForObject(getRootUrl() + "/accounts/9999999", AccountResponse.class);
+        Assertions.assertNull(postResponse.getBalance());
+
+
     }
 
 
