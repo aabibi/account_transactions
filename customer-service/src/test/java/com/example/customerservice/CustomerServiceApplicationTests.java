@@ -2,11 +2,20 @@ package com.example.customerservice;
 
 
 import com.example.customerservice.entity.Account;
+import com.example.customerservice.entity.model.UpdateBalanceRequest;
+import com.example.customerservice.exception.UserNotFoundException;
 import com.example.customerservice.service.AccountService;
 
-import org.checkerframework.checker.nullness.qual.AssertNonNullIfNonNull;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +23,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.yaml.snakeyaml.emitter.Emitter;
 
 
 import java.math.BigDecimal;
@@ -34,26 +44,38 @@ class CustomerServiceApplicationTests {
     }
 
     @Autowired
-    private  AccountService accountService;
+    private AccountService accountService;
+
+
+    @Before
+    public void setup() {
+
+        Account user = new Account();
+        user.setDocument_number(12345L);
+        user.setAccountMoney(BigDecimal.valueOf(50.00));
+        accountService.addAccount(user);
+
+        Account user2 = new Account();
+        user2.setDocument_number(456789L);
+        user2.setAccountMoney(BigDecimal.valueOf(50.00));
+        accountService.addAccount(user2);
+
+    }
 
 
     @Test
     public void testGetAccountEndpoint() {
 
-        Account user  = new Account();
-        user.setDocument_number(45L);
-        user.setAccountMoney(BigDecimal.valueOf(50.00));
-        accountService.addAccount(user);
-
         Account account = restTemplate.getForObject(getRootUrl() + "/accounts/1", Account.class);
         Assertions.assertNotNull(account);
+
+
     }
 
     @Test
     public void testPostAccountEndpoint() {
 
-
-        Account user  = new Account();
+        Account user = new Account();
         user.setDocument_number(12345L);
         user.setAccountMoney(BigDecimal.valueOf(150.00));
 
@@ -63,27 +85,46 @@ class CustomerServiceApplicationTests {
     }
 
     @Test
-    void testAddandGetAccountByDocumentNumber()  {
-        Account user  = new Account();
-        user.setDocument_number(45L);
+    void testGetAccountByDocumentNumberFailed() {
+
+        Assertions.assertNull(accountService.getUserByDocumentNumber(12345L));
+    }
+
+
+    @Test
+    void testGetAccountByDocumentNumberSuccess() {
+
+        Account user = new Account();
+        user.setDocument_number(1987L);
         user.setAccountMoney(BigDecimal.valueOf(50.00));
         accountService.addAccount(user);
-        Assertions.assertNotNull(accountService.getUserByDocumentNumber(45L));
+
+        Assertions.assertNotNull(accountService.getUserByDocumentNumber(1987L));
     }
 
     @Test
-    void testGetUserFailed()  {
-        Assertions.assertNotEquals(8L, accountService.getUserById(8L));
+    void testGetUserFailed() {
+
+        restTemplate.getForObject(getRootUrl() + "/accounts/9999999", Account.class);
     }
 
 
     @Test
-    void testUpdateAccountNegative()  {
-        Account user  = new Account();
+    void testUpdateAccountBalance() {
+
+        Account user = new Account();
         user.setDocument_number(50L);
         user.setAccountMoney(BigDecimal.valueOf(150));
         accountService.addAccount(user);
-        Assertions.assertEquals(BigDecimal.valueOf(200).doubleValue(), accountService.getUserByDocumentNumber(50L).getAccountMoney().add(BigDecimal.valueOf(50)).doubleValue());
+        Account account = accountService.getUserByDocumentNumber(50L);
+        account.setAccountMoney(account.getAccountMoney().add(new BigDecimal(250.99)));
+
+        UpdateBalanceRequest updateBalanceRequest = new UpdateBalanceRequest();
+        updateBalanceRequest.setAccountId(account.getAccountId());
+        updateBalanceRequest.setAmountToUpdate(account.getAccountMoney());
+
+        restTemplate.put(getRootUrl() + "/accounts", updateBalanceRequest);
+        Assertions.assertEquals(BigDecimal.valueOf(400.99).doubleValue(), accountService.getUserByDocumentNumber(50L).getAccountMoney().doubleValue());
 
     }
 

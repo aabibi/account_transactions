@@ -3,16 +3,14 @@ package com.example.transactionservice.controller;
 
 import brave.Tracer;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.entity.TransactionType;
-import com.example.transactionservice.entity.model.AccountResponse;
 import com.example.transactionservice.entity.model.TransactionMessage;
 import com.example.transactionservice.entity.model.TransactionRequest;
 import com.example.transactionservice.entity.model.TransactionResponse;
-import com.example.transactionservice.exception.TransactionFoundException;
+import com.example.transactionservice.exception.InvalidTransactionTypeException;
+import com.example.transactionservice.exception.InvalidTransactionException;
 import com.example.transactionservice.exception.UserNotFoundException;
 import com.example.transactionservice.service.TransactionService;
 import com.example.transactionservice.util.RestClient;
@@ -62,7 +60,7 @@ public class TransactionController {
 
         Transaction transaction = transactionService.getTransaction(transactionId);
         if (transaction == null) {
-            throw new TransactionFoundException("Transaction with id " + transactionId + " not found.");
+            throw new InvalidTransactionException("Transaction with id " + transactionId + " not found.");
         }
         return new TransactionResponse(transaction);
 
@@ -94,15 +92,15 @@ public class TransactionController {
 
         TransactionType transactionType = Utils.validateTransactionType(transactionRequest.getOperation_type());
         if ( transactionType == null ) {
-            throw new Exception("Incorrect transaction Type. The valid range is between 1,2,3 and 4 only.");
+            throw new InvalidTransactionTypeException("Incorrect transaction Type. The valid range is between 1,2,3 and 4 only.");
         }
 
         if (transactionRequest.getOperation_type() == 4 &&  transactionRequest.getAmount().doubleValue() < 0 ) {
-            throw new Exception("Payment transactions should also be greater than 0");
+            throw new InvalidTransactionException("Payment transactions should also be greater than 0");
         }
 
         if (transactionRequest.getOperation_type() != 4 &&  transactionRequest.getAmount().doubleValue() > 0 ) {
-            throw new Exception("Purchase/installment purchase, withdrawal must be of negative amount.");
+            throw new InvalidTransactionException("Purchase/installment purchase, withdrawal must be of negative amount.");
         }
 
         RestClient restClient = new RestClient(restTemplate, tracer);

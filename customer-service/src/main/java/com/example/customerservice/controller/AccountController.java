@@ -54,10 +54,16 @@ public class AccountController {
 
     @ApiOperation(value = "Update Account", notes = "Update account information in the system.")
     @PutMapping()
-    public AccountResponse updateAccountBalance(@RequestBody UpdateBalanceRequest updateBalanceRequest)  {
+    public AccountResponse updateAccountBalance(@RequestBody UpdateBalanceRequest updateBalanceRequest) throws UserNotFoundException {
 
         Account account = accountService.getUserById(updateBalanceRequest.getAccountId());
-        return new AccountResponse(account.getAccountId(), account.getDocument_number(), account.getAccountMoney());
+        if (account != null) {
+            account.setAccountMoney(updateBalanceRequest.getAmountToUpdate());
+            accountService.addAccount(account);
+            return new AccountResponse(account.getAccountId(), account.getDocument_number(), account.getAccountMoney());
+        }
+
+        throw new UserNotFoundException("Account with id " + updateBalanceRequest.getAccountId() + " not found.");
     }
 
 }

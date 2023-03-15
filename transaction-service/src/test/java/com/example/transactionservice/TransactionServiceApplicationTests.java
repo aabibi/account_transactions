@@ -55,6 +55,20 @@ class TransactionServiceApplicationTests {
 
 
   @Test
+  public void testGetTransactionEndpointBadTransactionType() {
+
+    TransactionRequest transactionRequest  = new TransactionRequest();
+    transactionRequest.setOperation_type(9);
+    transactionRequest.setAccountId(1);
+    transactionRequest.setAmount(BigDecimal.valueOf(56.99));
+
+
+    ResponseEntity<TransactionRequest> postResponse = restTemplate.postForEntity(getRootUrl() + "/transactions", transactionRequest, TransactionRequest.class);
+    Assertions.assertNotNull(postResponse);
+  }
+
+
+  @Test
   public void testPostAccountEndpoint() {
 
     TransactionRequest transaction  = new TransactionRequest();
