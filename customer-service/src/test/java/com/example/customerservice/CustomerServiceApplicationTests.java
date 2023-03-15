@@ -2,6 +2,8 @@ package com.example.customerservice;
 
 
 import com.example.customerservice.entity.Account;
+import com.example.customerservice.entity.model.AccountRequest;
+import com.example.customerservice.entity.model.AccountResponse;
 import com.example.customerservice.entity.model.UpdateBalanceRequest;
 import com.example.customerservice.exception.UserNotFoundException;
 import com.example.customerservice.service.AccountService;
@@ -75,13 +77,15 @@ class CustomerServiceApplicationTests {
     @Test
     public void testPostAccountEndpoint() {
 
-        Account user = new Account();
+        AccountRequest user = new AccountRequest();
         user.setDocument_number(12345L);
-        user.setAccountMoney(BigDecimal.valueOf(150.00));
+        user.setInitalBalance(BigDecimal.valueOf(150.00));
 
-        ResponseEntity<Account> postResponse = restTemplate.postForEntity(getRootUrl() + "/accounts", user, Account.class);
+        ResponseEntity<AccountResponse> postResponse = restTemplate.postForEntity(getRootUrl() + "/accounts", user, AccountResponse.class);
         Assertions.assertNotNull(postResponse);
-        Assertions.assertNotNull(postResponse.getBody());
+
+        AccountResponse account = postResponse.getBody();
+        Assertions.assertEquals(account.getDocument_number(), user.getDocument_number());
     }
 
     @Test
