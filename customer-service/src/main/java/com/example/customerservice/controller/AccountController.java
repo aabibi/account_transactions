@@ -1,30 +1,16 @@
 package com.example.customerservice.controller;
 
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
+
 import com.example.customerservice.entity.Account;
 import com.example.customerservice.entity.model.*;
-import com.example.customerservice.exception.InssuficientBalanceUpdateException;
-import com.example.customerservice.exception.InvalidNegativeBalanceUpdateException;
 import com.example.customerservice.exception.UserAlreadyExistException;
 import com.example.customerservice.exception.UserNotFoundException;
 import com.example.customerservice.service.AccountService;
-import com.example.customerservice.util.Utils;
-import com.google.gson.Gson;
 import io.swagger.annotations.ApiOperation;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
-import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-
-
-
-import java.math.BigDecimal;
 
 
 @Slf4j
@@ -42,9 +28,8 @@ public class AccountController {
     @PostMapping
     public AccountResponse addAccount(@RequestBody AccountRequest accountRequest) throws UserAlreadyExistException {
 
-        //validation
         if (!ObjectUtils.isEmpty(accountService.getUserByDocumentNumber(accountRequest.getDocument_number()))) {
-            throw new UserAlreadyExistException("Account already exist. Aborting adding Account.");
+            throw new UserAlreadyExistException("Account already exist. Aborting adding account.");
         }
 
         Account newaccount = new Account();
@@ -67,8 +52,8 @@ public class AccountController {
     }
 
 
-    @ApiOperation(value = "New Account", notes = "Add a new Account to the system.")
-    @PostMapping("/update_balance")
+    @ApiOperation(value = "Update Account", notes = "Update account information in the system.")
+    @PutMapping()
     public AccountResponse updateAccountBalance(@RequestBody UpdateBalanceRequest updateBalanceRequest)  {
 
         Account account = accountService.getUserById(updateBalanceRequest.getAccountId());

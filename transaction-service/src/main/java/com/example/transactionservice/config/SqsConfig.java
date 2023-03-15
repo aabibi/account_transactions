@@ -12,7 +12,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 
-// Marker annotation that tells spring to generate bean definitions at runtime for the methods annotated with @Bean annotation.
+
 @Configuration
 @EnableSqs
 public class SqsConfig {

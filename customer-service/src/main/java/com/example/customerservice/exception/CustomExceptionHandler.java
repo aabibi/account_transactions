@@ -25,7 +25,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleGenericException(final Exception ex) {
-        // uncaught error happens, just log it here and return an user-friendly response
         logger.error(
                String.format(
                         "Uncaught exception. Stack trace: %s\n", ex + getFullStackTraceLog(ex)));
@@ -43,8 +42,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorResponse errorResponse = buildErrorResponse(ex, "Database SQL Error.", httpStatus,false);
         return new ResponseEntity<>(errorResponse, httpStatus);
     }
-
-
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundError(
@@ -83,9 +80,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, httpStatus);
     }
-
-
-
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleInvalidParameters(

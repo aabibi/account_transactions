@@ -64,7 +64,6 @@ services:
     expose:
       - "8082"
     depends_on:
-      - sqs
       - mysql-transaction
       - zipkin
       - discovery-server
@@ -87,19 +86,5 @@ services:
     expose:
       - "8081"
     depends_on:
-      - sqs
       - mysql-account
       - discovery-server
-
-  sqs:
-    image: vsouza/sqs-local:latest
-    environment:
-      AWS_REGION: us-east-1
-      AWS_ACCESS_KEY_ID: AKIASZUPRZXLD6DI5NES
-      AWS_SECRET_ACCESS_KEY: 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
-    command: >
-      sh -c "
-        aws sqs create-queue --queue-name transaction-queue &&
-        aws sqs create-queue --queue-name account-queue &&
-        sleep 5"
-

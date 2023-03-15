@@ -35,6 +35,10 @@ public class Transaction {
     @Column(name = "amount",nullable = false)
     private BigDecimal amount;
 
+    @Column(name = "comment")
+    private String comment;
+
+    //optimistic lock to help against race condition
     @Version
     private long version;
 

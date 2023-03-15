@@ -1,8 +1,6 @@
 package com.example.transactionservice.entity.model;
 
-import com.example.transactionservice.entity.Status;
 import com.example.transactionservice.entity.Transaction;
-import com.example.transactionservice.util.Utils;
 
 import java.math.BigDecimal;
 
@@ -17,8 +15,7 @@ public class TransactionMessage {
 
     private int  transactionStatus;
 
-    private String errorReason;
-
+    private String comments;
 
     private long version;
 
@@ -56,12 +53,12 @@ public class TransactionMessage {
         this.version = version;
     }
 
-    public String getErrorReason() {
-        return errorReason;
+    public String getComments() {
+        return comments;
     }
 
-    public void setErrorReason(String errorReason) {
-        this.errorReason = errorReason;
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public long getAccountId() {

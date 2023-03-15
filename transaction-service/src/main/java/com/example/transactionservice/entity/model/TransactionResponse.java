@@ -16,22 +16,22 @@ import java.math.BigDecimal;
 public class TransactionResponse {
 
     private long transactionId;
-    private long account_Id;
+    private long accountId;
     private int operation_type;
     private BigDecimal amount;
 
+    private String comment;
+
+    private int  transactionStatus;
+
     public TransactionResponse(Transaction transaction) {
 
-        this.account_Id =transaction.getAccountID();
+        this.accountId =transaction.getAccountID();
         this.amount = transaction.getAmount();
         this.operation_type = transaction.getTransactionType();
         this.transactionId  = transaction.getTransactionID();
+        this.transactionStatus = transaction.getTransactionStatus();
+        this.comment = transaction.getComment();
     }
 
-    public TransactionResponse(TransactionMessage responseMessage) {
-
-        this.account_Id =responseMessage.getAccountId();
-        this.amount = responseMessage.getAmount();
-        this.operation_type = responseMessage.getOperation_type();
-    }
 }

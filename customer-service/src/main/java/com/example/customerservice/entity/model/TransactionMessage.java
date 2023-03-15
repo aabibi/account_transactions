@@ -12,14 +12,14 @@ public class TransactionMessage {
 
     private int transactionStatus;
 
-    private String errorReason;
+    private String comments;
 
-    public String getErrorReason() {
-        return errorReason;
+    public String getComments() {
+        return comments;
     }
 
-    public void setErrorReason(String errorReason) {
-        this.errorReason = errorReason;
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public long getAccountId() {

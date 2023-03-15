@@ -13,7 +13,6 @@ import com.example.transactionservice.entity.model.TransactionRequest;
 import com.example.transactionservice.entity.model.TransactionResponse;
 import com.example.transactionservice.exception.TransactionFoundException;
 import com.example.transactionservice.exception.UserNotFoundException;
-import com.example.transactionservice.service.RestTemplateResponseErrorHandler;
 import com.example.transactionservice.service.TransactionService;
 import com.example.transactionservice.util.RestClient;
 import com.example.transactionservice.util.Utils;
@@ -22,13 +21,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
-import java.util.List;
 
 
 @Slf4j
@@ -43,13 +40,9 @@ public class TransactionController {
 
     private RestTemplate restTemplate;
 
-
     @Value("${sqs.account.url}")
     private String accountQueueUrl;
 
-
-    @Value("${sqs.transaction.url}")
-    private String transactionQueueUrl;
 
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
@@ -78,8 +71,6 @@ public class TransactionController {
     public TransactionResponse getAccount(@RequestBody @Valid TransactionRequest request) throws Exception {
 
 
-
-
         validateTransactionRequest(request);
         Transaction transaction = transactionService.addTransaction(new Transaction(request));
 
@@ -91,31 +82,6 @@ public class TransactionController {
 
         return new TransactionResponse(transaction);
 
-        /*
-
-        String transacQueueUrl = sqs.getQueueUrl(transactionQueueUrl).getQueueUrl();
-        ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(transacQueueUrl)
-                .withMaxNumberOfMessages(1)
-                .withWaitTimeSeconds(2); // wait for up to 2 seconds for a message
-        List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
-        if (messages.size() > 0) {
-            // process the message
-            String messageBody = messages.get(0).getBody();
-            TransactionMessage transactionResponse = new Gson().fromJson(messageBody, TransactionMessage.class);
-
-            if (transactionResponse != null  && transactionResponse.getStatus() == 1) {
-                Transaction transaction = transactionService.addTransaction(new Transaction(transactionResponse));
-                sqs.deleteMessage(transacQueueUrl, messages.get(0).getReceiptHandle());
-                return new TransactionResponse(transaction);
-            }
-            else {
-                sqs.deleteMessage(transacQueueUrl, messages.get(0).getReceiptHandle());
-                throw new TransactionFoundException("Transaction failed. Reason:" + transactionResponse.getErrorReason());
-            }
-
-        }
-
-        return null;  */
     }
 
 

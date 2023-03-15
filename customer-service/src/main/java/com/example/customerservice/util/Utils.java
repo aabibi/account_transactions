@@ -11,16 +11,6 @@ public class Utils {
 
 
     public static TransactionType validateTransactionType(int type) {
-
-//        TransactionType transactionType = null;
-//        try {
-//             transactionType = integerTransactionTypeHashMap.get(type);
-//        } catch (Exception e) {
-//
-//        }
-//
-//        return transactionType;
-
         return  integerTransactionTypeHashMap.get(type);
     }
 

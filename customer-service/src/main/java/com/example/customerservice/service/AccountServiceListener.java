@@ -6,7 +6,6 @@ import com.example.customerservice.entity.Account;
 import com.example.customerservice.entity.model.TransactionMessage;
 import com.example.customerservice.entity.model.TransactionType;
 import com.example.customerservice.util.Utils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,9 +37,6 @@ public class AccountServiceListener {
     public void receiveMessage(String message)   {
 
         TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
-
-        // process transaction
-        // ...
         validateTransactionRequest(transaction);
 
     }
@@ -57,7 +53,7 @@ public class AccountServiceListener {
             if ( transactionType == null ) {
 
                 updateBalanceRequest.setTransactionStatus(3);
-                updateBalanceRequest.setErrorReason("Incorrect transaction Type. The valid range is between 1,2,3 and 4 only.");
+                updateBalanceRequest.setComments("Incorrect transaction Type. The valid range is between 1,2,3 and 4 only.");
                 sendMsgRequest.withQueueUrl(successQueueUrl)
                         .withMessageBody(new Gson().toJson(updateBalanceRequest));
                 sqs.sendMessage(sendMsgRequest);
@@ -74,7 +70,7 @@ public class AccountServiceListener {
                     sqs.sendMessage(sendMsgRequest);
                 } else {
                     updateBalanceRequest.setTransactionStatus(3);
-                    updateBalanceRequest.setErrorReason("Payment transactions should also be greater than 0");
+                    updateBalanceRequest.setComments("Payment transactions should also be greater than 0");
                     sendMsgRequest.withQueueUrl(successQueueUrl)
                             .withMessageBody(new Gson().toJson(updateBalanceRequest));
                     sqs.sendMessage(sendMsgRequest);
@@ -92,7 +88,7 @@ public class AccountServiceListener {
                 } else {
                     //  throw new InssuficientBalanceUpdateException("Transactions failed, not enough money to complete this.");
                     updateBalanceRequest.setTransactionStatus(3);
-                    updateBalanceRequest.setErrorReason("Transactions failed, not enough money to complete this.");
+                    updateBalanceRequest.setComments("Transactions failed, not enough money to complete this.");
                     sendMsgRequest.withQueueUrl(successQueueUrl)
                             .withMessageBody(new Gson().toJson(updateBalanceRequest));
                     sqs.sendMessage(sendMsgRequest);
@@ -100,7 +96,7 @@ public class AccountServiceListener {
             } else {
                 // throw new InvalidNegativeBalanceUpdateException("Purchase/installment purchase, withdrawal must be of negative amount");
                 updateBalanceRequest.setTransactionStatus(3);
-                updateBalanceRequest.setErrorReason("Purchase/installment purchase, withdrawal must be of negative amount.");
+                updateBalanceRequest.setComments("Purchase/installment purchase, withdrawal must be of negative amount.");
                 sendMsgRequest.withQueueUrl(successQueueUrl)
                         .withMessageBody(new Gson().toJson(updateBalanceRequest));
                 sqs.sendMessage(sendMsgRequest);
@@ -110,7 +106,7 @@ public class AccountServiceListener {
         } else {
 
             updateBalanceRequest.setTransactionStatus(3);
-            updateBalanceRequest.setErrorReason("Account not found.");
+            updateBalanceRequest.setComments("Account not found.");
             sendMsgRequest.withQueueUrl(successQueueUrl)
                     .withMessageBody(new Gson().toJson(updateBalanceRequest));
             sqs.sendMessage(sendMsgRequest);
