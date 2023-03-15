@@ -1,6 +1,7 @@
 package com.example.transactionservice.controller;
 
 
+import brave.Tracer;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
@@ -43,13 +44,15 @@ public class TransactionController {
     @Value("${sqs.account.url}")
     private String accountQueueUrl;
 
+    private Tracer tracer;
 
     @Autowired
     private QueueMessagingTemplate queueMessagingTemplate;
 
-    public TransactionController(TransactionService transactionService, RestTemplate restTemplate) {
+    public TransactionController(TransactionService transactionService, RestTemplate restTemplate,  Tracer tracer) {
         this.transactionService = transactionService;
         this.restTemplate = restTemplate;
+        this.tracer = tracer;
 
     }
 
@@ -102,11 +105,12 @@ public class TransactionController {
             throw new Exception("Purchase/installment purchase, withdrawal must be of negative amount.");
         }
 
-        RestClient restClient = new RestClient(restTemplate);
-        AccountResponse account = restClient.getAccountById(transactionRequest.getAccountId());
-
-        if (account == null) {
-            throw new UserNotFoundException("Account with id + " + transactionRequest.getAccountId() + " does not exist");
+        RestClient restClient = new RestClient(restTemplate, tracer);
+        try {
+             restClient.getAccountById(transactionRequest.getAccountId());
+        }
+        catch (Exception e) {
+            throw new UserNotFoundException("Account with id: " + transactionRequest.getAccountId() + " does not exist.");
         }
 
     }

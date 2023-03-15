@@ -7,10 +7,7 @@ import java.util.Map;
 import brave.Span;
 import brave.Tracer;
 import com.example.transactionservice.entity.model.AccountResponse;
-import com.example.transactionservice.entity.model.TransactionRequest;
-import com.example.transactionservice.entity.model.UpdateBalanceRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -30,14 +27,22 @@ public class RestClient {
 
     private WebClient.Builder webClientBuilder;
 
+    private Tracer tracer;
 
-    public RestClient(RestTemplate restTemplate) {
+
+    public RestClient(RestTemplate restTemplate, Tracer tracer) {
         this.restTemplate = restTemplate;
+        this.tracer = tracer;
     }
 
     public AccountResponse getAccountById(long accountId) throws Exception {
 
 
+        Span inventoryServiceLookup = tracer.nextSpan().name("AccountServiceLookup");
+
+        try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceLookup.start())) {
+
+            inventoryServiceLookup.tag("call", "account-service");
 
             try {
                 Map<String, Long> params = new HashMap<>();
@@ -50,13 +55,12 @@ public class RestClient {
 
                 return result;
             } catch (Exception e) {
-
                 throw new Exception(e.getMessage());
-
             }
 
-
-
+        } finally {
+            inventoryServiceLookup.flush();
+        }
 
     }
 
