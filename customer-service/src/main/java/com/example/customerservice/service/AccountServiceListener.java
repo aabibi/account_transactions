@@ -31,10 +31,14 @@ public class AccountServiceListener {
     }
 
     @SqsListener(value = "${sqs.account.url}")
-    public void receiveMessage(String message) throws Exception {
+    public void receiveMessage(String message)  {
 
-        TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
-        validateTransactionRequest(transaction);
+        try {
+            TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
+            validateTransactionRequest(transaction);
+        } catch (Exception e) {
+            throw new  IllegalStateException("Invalid message format.");
+        }
 
     }
 
@@ -95,7 +99,7 @@ public class AccountServiceListener {
                     sqs.sendMessage(sendMsgRequest);
                 }
             } else {
-                // throw new InvalidNegativeBalanceUpdateException("Purchase/installment purchase, withdrawal must be of negative amount");
+
                 updateBalanceRequest.setTransactionStatus(3);
                 updateBalanceRequest.setComments("Purchase/installment purchase, withdrawal must be of negative amount.");
                 sendMsgRequest.withQueueUrl(successQueueUrl)

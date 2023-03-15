@@ -39,40 +39,41 @@ public class TransactionMessageListener {
     @SqsListener(value = "${sqs.transaction.url}")
     public void receiveMessage(String message) throws Exception {
 
-        TransactionMessage transactionMessage = new Gson().fromJson(message, TransactionMessage.class);
-        if (transactionMessage != null) {
+        try {
+            TransactionMessage transactionMessage = new Gson().fromJson(message, TransactionMessage.class);
 
-            Transaction transaction = transactionService.getTransaction(transactionMessage.getTransactionId());
+            if (transactionMessage != null) {
 
-            if ( transaction == null) {
-                throw  new InvalidTransactionException("Transaction not found.");
-            }
+                Transaction transaction = transactionService.getTransaction(transactionMessage.getTransactionId());
 
-            //  Lets make sure this transaction has not already been updated ( checking the version )
-            // Handle concurrent transaction , if the version is not the same, that mean this record has already been updated (Optimistic lock)
-            if (transaction.getVersion() != transactionMessage.getVersion()) {
-                throw new OptimisticLockException("Transaction id: " +  transactionMessage.getTransactionId() +  " has already been updated.");
-            }
+                if (transaction == null) {
+                    throw new InvalidTransactionException("Transaction not found.");
+                }
 
-            if ((Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
+                //  Lets make sure this transaction has not already been updated ( checking the version )
+                // Handle concurrent transaction , if the version is not the same, that mean this record has already been updated (Optimistic lock)
+                if (transaction.getVersion() != transactionMessage.getVersion()) {
+                    throw new OptimisticLockException("Transaction id: " + transactionMessage.getTransactionId() + " has already been updated.");
+                }
+
+                if ((Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
 
                     transaction.setTransactionStatus(transactionMessage.getTransactionStatus());
                     transaction.setEventDate(LocalDateTime.now());
                     transactionService.addTransaction(transaction);
                     transaction.setComment("Transaction Approved");
-            }
-            else {
+                } else {
                     transaction.setComment(transactionMessage.getComments());
                     transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
                     throw new InvalidTransactionException(transactionMessage.getComments());
                 }
+            }
+
+
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid message format.");
         }
 
-
-
-
-        // Pass the response to the transaction service for processing
-     //   transactionService.addTransaction(null);
     }
 
 
