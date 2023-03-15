@@ -21,9 +21,6 @@ public class AccountServiceListener {
     @Autowired
     private AmazonSQS sqs;
 
-    @Value("${sqs.account.url}")
-    private String accountQueueUrl;
-
     @Value("${sqs.transaction.url}")
     private String successQueueUrl;
 
@@ -34,14 +31,18 @@ public class AccountServiceListener {
     }
 
     @SqsListener(value = "${sqs.account.url}")
-    public void receiveMessage(String message)   {
+    public void receiveMessage(String message) throws Exception {
 
         TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
         validateTransactionRequest(transaction);
 
     }
 
-    private void validateTransactionRequest(TransactionMessage updateBalanceRequest)  {
+    private void validateTransactionRequest(TransactionMessage updateBalanceRequest) throws Exception {
+
+        if (updateBalanceRequest == null ) {
+             throw new Exception("Invalid Message, Ignoring");
+        }
 
         Account account = accountService.getUserById(updateBalanceRequest.getAccountId());
         SendMessageRequest sendMsgRequest = new SendMessageRequest();

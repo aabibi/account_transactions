@@ -38,11 +38,11 @@ public class RestClient {
     public AccountResponse getAccountById(long accountId) throws Exception {
 
 
-        Span inventoryServiceLookup = tracer.nextSpan().name("AccountServiceLookup");
+        Span accountServiceLookup = tracer.nextSpan().name("AccountServiceLookup");
 
-        try (Tracer.SpanInScope ignored = tracer.withSpanInScope(inventoryServiceLookup.start())) {
+        try (Tracer.SpanInScope ignored = tracer.withSpanInScope(accountServiceLookup.start())) {
 
-            inventoryServiceLookup.tag("call", "account-service");
+            accountServiceLookup.tag("call", "account-service");
 
             try {
                 Map<String, Long> params = new HashMap<>();
@@ -59,7 +59,7 @@ public class RestClient {
             }
 
         } finally {
-            inventoryServiceLookup.flush();
+            accountServiceLookup.flush();
         }
 
     }

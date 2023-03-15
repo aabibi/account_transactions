@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.example.transactionservice.entity.Status;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.entity.model.TransactionMessage;
+import com.example.transactionservice.exception.InvalidTransactionException;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,13 +43,18 @@ public class TransactionMessageListener {
         if (transactionMessage != null) {
 
             Transaction transaction = transactionService.getTransaction(transactionMessage.getTransactionId());
+
+            if ( transaction == null) {
+                throw  new InvalidTransactionException("Transaction not found.");
+            }
+
             //  Lets make sure this transaction has not already been updated ( checking the version )
             // Handle concurrent transaction , if the version is not the same, that mean this record has already been updated (Optimistic lock)
-            if (transaction != null && transaction.getVersion() != transactionMessage.getVersion()) {
+            if (transaction.getVersion() != transactionMessage.getVersion()) {
                 throw new OptimisticLockException("Transaction id: " +  transactionMessage.getTransactionId() +  " has already been updated.");
             }
 
-            if (transaction != null &&  (Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
+            if ((Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
 
                     transaction.setTransactionStatus(transactionMessage.getTransactionStatus());
                     transaction.setEventDate(LocalDateTime.now());
@@ -56,11 +62,9 @@ public class TransactionMessageListener {
                     transaction.setComment("Transaction Approved");
             }
             else {
-                    if (transaction != null) {
-                        transaction.setComment(transactionMessage.getComments());
-                        transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
-                    }
-                    throw new Exception(transactionMessage.getComments());
+                    transaction.setComment(transactionMessage.getComments());
+                    transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
+                    throw new InvalidTransactionException(transactionMessage.getComments());
                 }
         }
 
