@@ -60,8 +60,9 @@ public class TransactionMessageListener {
 
                     transaction.setTransactionStatus(transactionMessage.getTransactionStatus());
                     transaction.setEventDate(LocalDateTime.now());
-                    transactionService.addTransaction(transaction);
                     transaction.setComment("Transaction Approved");
+                    transactionService.addTransaction(transaction);
+
                 } else {
                     transaction.setComment(transactionMessage.getComments());
                     transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
