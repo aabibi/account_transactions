@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 
 @Slf4j
 @RestController
@@ -34,7 +36,15 @@ public class AccountController {
 
         Account newaccount = new Account();
         newaccount.setDocument_number(accountRequest.getDocument_number());
-        newaccount.setAccountMoney(accountRequest.getInitalBalance());
+
+        //Balance is optional
+        if (accountRequest.getInitalBalance() == null ) {
+            newaccount.setAccountMoney(new BigDecimal(0.00));
+        }
+        else {
+            newaccount.setAccountMoney(accountRequest.getInitalBalance());
+        }
+
         Account account = accountService.addAccount(newaccount);
         return new AccountResponse(account.getAccountId(), account.getDocument_number(), account.getAccountMoney());
     }
