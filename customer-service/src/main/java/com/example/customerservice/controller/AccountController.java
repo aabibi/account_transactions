@@ -39,7 +39,7 @@ public class AccountController {
 
         //Balance is optional
         if (accountRequest.getInitalBalance() == null ) {
-            newaccount.setAccountMoney(new BigDecimal(0.00));
+            newaccount.setAccountMoney(new BigDecimal("0.00"));
         }
         else {
             newaccount.setAccountMoney(accountRequest.getInitalBalance());

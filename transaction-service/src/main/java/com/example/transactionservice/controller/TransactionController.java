@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -44,8 +46,6 @@ public class TransactionController {
 
     private Tracer tracer;
 
-    @Autowired
-    private QueueMessagingTemplate queueMessagingTemplate;
 
     public TransactionController(TransactionService transactionService, RestTemplate restTemplate,  Tracer tracer) {
         this.transactionService = transactionService;
@@ -56,7 +56,7 @@ public class TransactionController {
 
     @ApiOperation(value = "Get Transaction information", notes = "Get Transaction info based on transaction id.")
     @GetMapping("/{transactionId}")
-    public TransactionResponse getAccount(@PathVariable long transactionId) throws Exception {
+    public TransactionResponse getTransaction(@PathVariable long transactionId) throws Exception {
 
         Transaction transaction = transactionService.getTransaction(transactionId);
         if (transaction == null) {
@@ -67,9 +67,27 @@ public class TransactionController {
     }
 
 
+    @ApiOperation(value = "Get All Transactions for a specific account", notes = "Get all Transactions info based on account id.")
+    @GetMapping("/accounts/{accountId}")
+    public List<TransactionResponse> getTransactions(@PathVariable long accountId) throws Exception {
+
+        List<Transaction> transactions = transactionService.getTransactionByAccountId(accountId);
+        if (transactions == null) {
+            throw new InvalidTransactionException("Transactions for account id:" + accountId + " not found.");
+        }
+
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            transactionResponses.add(new TransactionResponse(transaction));
+        }
+
+        return transactionResponses;
+
+    }
+
     @ApiOperation(value = "Create Transaction information", notes = "Create a transaction info based on account id.")
     @PostMapping
-    public TransactionResponse getAccount(@RequestBody @Valid TransactionRequest request) throws Exception {
+    public TransactionResponse createTransaction(@RequestBody @Valid TransactionRequest request) throws Exception {
 
 
         validateTransactionRequest(request);

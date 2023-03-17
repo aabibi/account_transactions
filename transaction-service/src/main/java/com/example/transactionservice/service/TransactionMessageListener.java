@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.OptimisticLockException;
 import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class TransactionMessageListener {
@@ -30,6 +32,7 @@ public class TransactionMessageListener {
 
     private TransactionService transactionService;
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public TransactionMessageListener(TransactionService transactionService) {
 
@@ -39,41 +42,46 @@ public class TransactionMessageListener {
     @SqsListener(value = "${sqs.transaction.url}")
     public void receiveMessage(String message) throws Exception {
 
-        try {
-            TransactionMessage transactionMessage = new Gson().fromJson(message, TransactionMessage.class);
 
-            if (transactionMessage != null) {
+        executorService.submit(() -> {
 
-                Transaction transaction = transactionService.getTransaction(transactionMessage.getTransactionId());
+            try {
+                TransactionMessage transactionMessage = new Gson().fromJson(message, TransactionMessage.class);
 
-                if (transaction == null) {
-                    throw new InvalidTransactionException("Transaction not found.");
+                if (transactionMessage != null) {
+
+                    Transaction transaction = transactionService.getTransaction(transactionMessage.getTransactionId());
+
+                    if (transaction == null) {
+                        throw new InvalidTransactionException("Transaction not found.");
+                    }
+
+                    //  Lets make sure this transaction has not already been updated ( checking the version )
+                    // Handle concurrent transaction , if the version is not the same, that mean this record has already been updated (Optimistic lock)
+                    if (transaction.getVersion() != transactionMessage.getVersion()) {
+                        throw new OptimisticLockException("Transaction id: " + transactionMessage.getTransactionId() + " has already been updated.");
+                    }
+
+                    if ((Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
+
+                        transaction.setTransactionStatus(transactionMessage.getTransactionStatus());
+                        transaction.setEventDate(LocalDateTime.now());
+                        transaction.setComment("Transaction Approved");
+                        transactionService.addTransaction(transaction);
+
+                    } else {
+                        transaction.setComment(transactionMessage.getComments());
+                        transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
+                        throw new InvalidTransactionException(transactionMessage.getComments());
+                    }
                 }
 
-                //  Lets make sure this transaction has not already been updated ( checking the version )
-                // Handle concurrent transaction , if the version is not the same, that mean this record has already been updated (Optimistic lock)
-                if (transaction.getVersion() != transactionMessage.getVersion()) {
-                    throw new OptimisticLockException("Transaction id: " + transactionMessage.getTransactionId() + " has already been updated.");
-                }
 
-                if ((Status.POSTED.getStatus_type() == transactionMessage.getTransactionStatus())) {
-
-                    transaction.setTransactionStatus(transactionMessage.getTransactionStatus());
-                    transaction.setEventDate(LocalDateTime.now());
-                    transaction.setComment("Transaction Approved");
-                    transactionService.addTransaction(transaction);
-
-                } else {
-                    transaction.setComment(transactionMessage.getComments());
-                    transactionService.updateTransactionStatus(transaction, Status.CANCELLED);
-                    throw new InvalidTransactionException(transactionMessage.getComments());
-                }
+            } catch (Exception e) {
+                throw new IllegalStateException("Invalid message format.");
             }
 
-
-        } catch (Exception e) {
-            throw new IllegalStateException("Invalid message format.");
-        }
+        });
 
     }
 

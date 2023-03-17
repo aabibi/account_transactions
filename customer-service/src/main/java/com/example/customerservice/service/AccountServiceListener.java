@@ -13,6 +13,8 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class AccountServiceListener {
@@ -26,6 +28,9 @@ public class AccountServiceListener {
 
     private AccountService accountService;
 
+    //private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+
     public AccountServiceListener(AccountService accountService) {
         this.accountService = accountService;
     }
@@ -33,13 +38,15 @@ public class AccountServiceListener {
     @SqsListener(value = "${sqs.account.url}")
     public void receiveMessage(String message)  {
 
-        try {
-            TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
-            validateTransactionRequest(transaction);
-        } catch (Exception e) {
-            throw new  IllegalStateException("Invalid message format.");
-        }
+     //   executorService.submit(() -> {
+            try {
+                TransactionMessage transaction = new Gson().fromJson(message, TransactionMessage.class);
+                validateTransactionRequest(transaction);
+            } catch (Exception e) {
+                throw new IllegalStateException("Invalid message format.");
+            }
 
+     //   });
     }
 
     private void validateTransactionRequest(TransactionMessage updateBalanceRequest) throws Exception {
