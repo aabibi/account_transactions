@@ -8,6 +8,8 @@ public class TransactionMessage {
     private int operation_type;
     private BigDecimal amount;
 
+    private BigDecimal balance;
+
     private  long transactionId;
 
     private int transactionStatus;
@@ -56,6 +58,14 @@ public class TransactionMessage {
 
     public long getTransactionId() {
         return transactionId;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
 
     public void setTransactionId(long transactionId) {

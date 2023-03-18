@@ -13,8 +13,7 @@ import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 @Service
 public class AccountServiceListener {
@@ -77,6 +76,7 @@ public class AccountServiceListener {
                 if (updateBalanceRequest.getAmount().doubleValue() > 0) {
                     accountService.creditMoney(account, updateBalanceRequest.getAmount());
                     updateBalanceRequest.setTransactionStatus(2);
+                    updateBalanceRequest.setBalance(account.getAccountMoney());
                     sendMsgRequest.withQueueUrl(successQueueUrl)
                             .withMessageBody(new Gson().toJson(updateBalanceRequest));
                     sqs.sendMessage(sendMsgRequest);
@@ -94,6 +94,7 @@ public class AccountServiceListener {
                 if (accountBalance.doubleValue() > 0) {
                     accountService.debitMoney(account, updateBalanceRequest.getAmount());
                     updateBalanceRequest.setTransactionStatus(2);
+                    updateBalanceRequest.setBalance(account.getAccountMoney());
                     sendMsgRequest.withQueueUrl(successQueueUrl)
                             .withMessageBody(new Gson().toJson(updateBalanceRequest));
                     sqs.sendMessage(sendMsgRequest);
@@ -101,6 +102,7 @@ public class AccountServiceListener {
                     //  throw new InssuficientBalanceUpdateException("Transactions failed, not enough money to complete this.");
                     updateBalanceRequest.setTransactionStatus(3);
                     updateBalanceRequest.setComments("Transactions failed, not enough money to complete this.");
+                    updateBalanceRequest.setBalance(account.getAccountMoney());
                     sendMsgRequest.withQueueUrl(successQueueUrl)
                             .withMessageBody(new Gson().toJson(updateBalanceRequest));
                     sqs.sendMessage(sendMsgRequest);
@@ -108,12 +110,12 @@ public class AccountServiceListener {
             } else {
 
                 updateBalanceRequest.setTransactionStatus(3);
+                updateBalanceRequest.setBalance(account.getAccountMoney());
                 updateBalanceRequest.setComments("Purchase/installment purchase, withdrawal must be of negative amount.");
                 sendMsgRequest.withQueueUrl(successQueueUrl)
                         .withMessageBody(new Gson().toJson(updateBalanceRequest));
                 sqs.sendMessage(sendMsgRequest);
             }
-
 
         } else {
 

@@ -46,6 +46,7 @@ class TransactionServiceApplicationTests {
     transaction.setTransactionType(TransactionType.INSTALLMENT_PURCHASE.getTransaction_type());
     transaction.setEventDate(LocalDateTime.now());
     transaction.setAmount(BigDecimal.valueOf(50.37));
+    transaction.setBalance(BigDecimal.valueOf(150.37));
     transaction.setTransactionStatus(Status.POSTED.getStatus_type());
     transactionService.addTransaction(transaction);
 
@@ -90,6 +91,7 @@ class TransactionServiceApplicationTests {
     transaction.setTransactionType(TransactionType.INSTALLMENT_PURCHASE.getTransaction_type());
     transaction.setEventDate(LocalDateTime.now());
     transaction.setAmount(BigDecimal.valueOf(50.37));
+    transaction.setBalance(BigDecimal.valueOf(150.37));
     transaction.setTransactionStatus(Status.POSTED.getStatus_type());
     transactionService.addTransaction(transaction);
 

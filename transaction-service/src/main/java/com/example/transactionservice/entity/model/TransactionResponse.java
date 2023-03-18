@@ -20,6 +20,7 @@ public class TransactionResponse {
     private int operation_type;
     private BigDecimal amount;
 
+    private  BigDecimal balance;
     private String comment;
 
     private int  transactionStatus;
@@ -31,6 +32,7 @@ public class TransactionResponse {
         this.operation_type = transaction.getTransactionType();
         this.transactionId  = transaction.getTransactionID();
         this.transactionStatus = transaction.getTransactionStatus();
+        this.balance  = transaction.getBalance();
         this.comment = transaction.getComment();
     }
 

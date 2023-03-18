@@ -35,6 +35,11 @@ public class Transaction {
     @Column(name = "amount",nullable = false)
     private BigDecimal amount;
 
+    @Column(name = "balance",nullable = false)
+    private BigDecimal balance;
+
+
+
     @Column(name = "comment")
     private String comment;
 
@@ -54,6 +59,7 @@ public class Transaction {
         this.setTransactionType(Utils.validateTransactionType(request.getOperation_type()).getTransaction_type());
         this.setAccountID(request.getAccountId());
         this.setEventDate(LocalDateTime.now());
+        this.setBalance(request.getAmount());
         this.setTransactionStatus(Status.PENDING.getStatus_type());
     }
 
