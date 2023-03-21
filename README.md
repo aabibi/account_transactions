@@ -105,4 +105,4 @@ to the database not being up on time. To fix this just restart these services in
 have time to investigate further.
 
 ## Conclusion
-Feel free to reach out to me if you have any issue running this. My email is meldroz@gmail.com  or armel.abibi@gmail.com
+Feel free to reach out to me if you have any issue running this.
