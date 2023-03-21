@@ -45,7 +45,7 @@ http://localhost:8081/swagger-ui.html
 
 POST /accounts: creates a new account.
 
-POST /accounts/update_balance: updates an existing account  
+PUT /accounts: updates an existing account  
 
 GET /accounts/{accountId}: retrieves an account by ID
 
@@ -70,7 +70,7 @@ GET /transactions/{transactionId}: retrieves a transaction by ID
 
 The Account Service and Transaction Service microservices are designed to work together. The Transaction Service depends on the Account Service to retrieve account information for transactions.
 Once accounts are created , you can make transactions based on the requirement and transactions type. When a transaction happens, the transaction service act like the coordinator and ask the account service to verify
-the request. If the request pass all the validation, only then do we create a transaction.
+the request. If the request pass all the validation, only then do we create a transaction. We are using AWS SQS to send messages between both services. This addition was made to make the application more scalable and non-blocking.
 
 **Validations**
 
@@ -92,8 +92,8 @@ This project is meant to be a simple example of how to implement microservices a
 - Adding authentication and authorization to the microservices
 
 - Adding more functionality to the microservices, such as support for different types of transactions
-- Due to time constraints, I did not use any queueing mechanism but this could be an improvement in terms of scaling. We could have a third service that sit in between the account and transaction service and handle the coordination between the two via messages.
 
+- Log bad messages to another database for analysis
 
 ## Potential issues while running/deploying in dockers. 
 
@@ -101,7 +101,7 @@ This project is meant to be a simple example of how to implement microservices a
 If you encounter this issue,I would suggest looking at zipkin f as they all show up there.
 
 2) Sometimes in Docker desktop, the Account or Transaction service may not start correctly. I think this is  due 
-to the database not being up on time. To fix this just restart these services in docker desktop and it should work. I did not 
+to the database not being up on time. To fix this just restart these services in docker desktop, and it should work. I did not 
 have time to investigate further.
 
 ## Conclusion

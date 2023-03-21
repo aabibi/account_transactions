@@ -2,6 +2,7 @@ package com.example.transactionservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,13 @@ public class TransactionServiceApplication {
     @Bean
     @LoadBalanced
     public RestTemplate getRestTemplate() { return  new RestTemplate();};
+
+    @Bean
+    @LoadBalanced
+    public RestTemplateBuilder getRestemplateBuilder() {
+        return  new RestTemplateBuilder();
+    }
+
 
     @Bean
     @LoadBalanced

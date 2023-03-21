@@ -25,7 +25,7 @@ public class SwaggerConfig {
 
     private ApiInfo metadata(){
         return new ApiInfoBuilder()
-                .title("Account Database API")
+                .title("Accounts Service API")
                 .description("API reference for developers")
                 .version("1.0")
                 .build();

@@ -1,78 +1,133 @@
 package com.example.transactionservice.controller;
 
 
+import brave.Tracer;
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.example.transactionservice.entity.Transaction;
 import com.example.transactionservice.entity.TransactionType;
-import com.example.transactionservice.entity.model.AccountResponse;
+import com.example.transactionservice.entity.model.TransactionMessage;
 import com.example.transactionservice.entity.model.TransactionRequest;
 import com.example.transactionservice.entity.model.TransactionResponse;
-import com.example.transactionservice.exception.TransactionFoundException;
+import com.example.transactionservice.exception.InvalidTransactionTypeException;
+import com.example.transactionservice.exception.InvalidTransactionException;
 import com.example.transactionservice.exception.UserNotFoundException;
 import com.example.transactionservice.service.TransactionService;
 import com.example.transactionservice.util.RestClient;
 import com.example.transactionservice.util.Utils;
+import com.google.gson.Gson;
 import io.swagger.annotations.ApiOperation;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
-@AllArgsConstructor
+
 @Slf4j
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
 
+    @Autowired
+    private AmazonSQSAsync sqs;
 
     private TransactionService transactionService;
 
     private RestTemplate restTemplate;
 
+    @Value("${sqs.account.url}")
+    private String accountQueueUrl;
+
+    private Tracer tracer;
+
+
+    public TransactionController(TransactionService transactionService, RestTemplate restTemplate,  Tracer tracer) {
+        this.transactionService = transactionService;
+        this.restTemplate = restTemplate;
+        this.tracer = tracer;
+
+    }
 
     @ApiOperation(value = "Get Transaction information", notes = "Get Transaction info based on transaction id.")
     @GetMapping("/{transactionId}")
-    public TransactionResponse getAccount(@PathVariable long transactionId) throws Exception {
+    public TransactionResponse getTransaction(@PathVariable long transactionId) throws Exception {
 
         Transaction transaction = transactionService.getTransaction(transactionId);
         if (transaction == null) {
-            throw new TransactionFoundException("Transaction with id " + transactionId + " not found.");
+            throw new InvalidTransactionException("Transaction with id " + transactionId + " not found.");
         }
         return new TransactionResponse(transaction);
 
     }
 
+
+    @ApiOperation(value = "Get All Transactions for a specific account", notes = "Get all Transactions info based on account id.")
+    @GetMapping("/accounts/{accountId}")
+    public List<TransactionResponse> getTransactions(@PathVariable long accountId) throws Exception {
+
+        List<Transaction> transactions = transactionService.getTransactionByAccountId(accountId);
+        if (transactions == null) {
+            throw new InvalidTransactionException("Transactions for account id:" + accountId + " not found.");
+        }
+
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            transactionResponses.add(new TransactionResponse(transaction));
+        }
+
+        return transactionResponses;
+
+    }
 
     @ApiOperation(value = "Create Transaction information", notes = "Create a transaction info based on account id.")
     @PostMapping
-    public TransactionResponse getAccount(@RequestBody TransactionRequest request) throws Exception {
+    public TransactionResponse createTransaction(@RequestBody @Valid TransactionRequest request) throws Exception {
+
 
         validateTransactionRequest(request);
         Transaction transaction = transactionService.addTransaction(new Transaction(request));
+
+        TransactionMessage transactionMessage = new TransactionMessage(transaction);
+        SendMessageRequest sendMsgRequest = new SendMessageRequest()
+                .withQueueUrl(accountQueueUrl)
+                .withMessageBody(new Gson().toJson(transactionMessage));
+        sqs.sendMessage(sendMsgRequest);
+
         return new TransactionResponse(transaction);
 
     }
 
 
-    public void validateTransactionRequest(TransactionRequest transactionRequest) throws UserNotFoundException {
+    public void validateTransactionRequest(TransactionRequest transactionRequest) throws Exception {
 
-        RestClient restClient = new RestClient(restTemplate);
+
 
         TransactionType transactionType = Utils.validateTransactionType(transactionRequest.getOperation_type());
-        if (transactionType == null) {
-            throw new UserNotFoundException("Invalid transaction type");
+        if ( transactionType == null ) {
+            throw new InvalidTransactionTypeException("Incorrect transaction Type. The valid range is between 1,2,3 and 4 only.");
         }
 
-        AccountResponse account = restClient.getAccountById(transactionRequest.getAccountId());
-
-        // first lets make sure the account owner exists
-        if (account == null) {
-            throw new UserNotFoundException("Account with id + " + transactionRequest.getAccountId() + " does not exist");
+        if (transactionRequest.getOperation_type() == 4 &&  transactionRequest.getAmount().doubleValue() < 0 ) {
+            throw new InvalidTransactionException("Payment transactions should also be greater than 0");
         }
 
-        // validate the transaction (making sure we have enough money )
-        restClient.updateAccountBalance(transactionRequest);
+        if (transactionRequest.getOperation_type() != 4 &&  transactionRequest.getAmount().doubleValue() > 0 ) {
+            throw new InvalidTransactionException("Purchase/installment purchase, withdrawal must be of negative amount.");
+        }
+
+        RestClient restClient = new RestClient(restTemplate, tracer);
+        try {
+             restClient.getAccountById(transactionRequest.getAccountId());
+        }
+        catch (Exception e) {
+            throw new UserNotFoundException("Account with id: " + transactionRequest.getAccountId() + " does not exist.");
+        }
 
     }
-
 }
