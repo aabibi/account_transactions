@@ -59,6 +59,8 @@ services:
       - sqs.transaction.url=transaction-queue
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-transaction:3306/transaction-service
+    volumes:
+      - ./transaction-service/logs:/app/logs
     ports:
       - "8082:8082"
     expose:
@@ -67,6 +69,13 @@ services:
       - mysql-transaction
       - zipkin
       - discovery-server
+
+  transaction-service-logs:
+    image: busybox
+    container_name: transaction-service-logs
+    volumes:
+      - ./transaction-service/logs:/logs
+    command: "tail -f /logs/transaction-service.log | nc logstash 5000"
 
   ## Inventory-Service Docker Compose Config
   account-service:
@@ -81,6 +90,8 @@ services:
       - sqs.transaction.url=transaction-queue
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-account:3306/account-service
+    volumes:
+      - ./customer-service/logs:/app/logs
     ports:
       - "8081:8081"
     expose:
@@ -88,3 +99,63 @@ services:
     depends_on:
       - mysql-account
       - discovery-server
+
+  account-service-logs:
+    image: busybox
+    container_name: account-service-logs
+    volumes:
+      - ./customer-service/logs:/logs
+    command: "tail -f /logs/account-service.log | nc logstash 5000"
+
+  prometheus:
+    image: prom/prometheus:v2.37.1
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - transaction-service
+      - account-service
+
+  grafana:
+    image: grafana/grafana-oss:8.5.2
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    links:
+      - prometheus:prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+
+  logstash:
+      image: docker.elastic.co/logstash/logstash:7.14.2
+      container_name: logstash
+      volumes:
+        - ./logstash/config:/usr/share/logstash/config
+        - ./logstash/pipeline:/usr/share/logstash/pipeline
+      environment:
+        - "ES_HOST=elasticsearch"
+        - "ES_PORT=9200"
+
+  kibana:
+      image: docker.elastic.co/kibana/kibana:7.14.2
+      container_name: kibana
+      ports:
+        - "5601:5601"
+      environment:
+        - "ELASTICSEARCH_URL=http://elasticsearch:9200"
