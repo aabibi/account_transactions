@@ -16,6 +16,7 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>api-gateway</module>
         <module>discovery-server</module>
         <module>customer-service</module>
         <module>transaction-service</module>

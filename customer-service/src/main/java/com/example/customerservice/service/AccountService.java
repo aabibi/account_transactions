@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +31,11 @@ public class AccountService {
             return account.orElse(null);
         }
         return null;
+    }
+
+    public List<Account> getAllAccounts() {
+
+        return  accountRepository.findAll();
     }
 
   public Account getUserByDocumentNumber(Long documentNumber)  {

@@ -70,12 +70,6 @@ services:
       - zipkin
       - discovery-server
 
-  transaction-service-logs:
-    image: busybox
-    container_name: transaction-service-logs
-    volumes:
-      - ./transaction-service/logs:/logs
-    command: "tail -f /logs/transaction-service.log | nc logstash 5000"
 
   ## Inventory-Service Docker Compose Config
   account-service:
@@ -100,12 +94,6 @@ services:
       - mysql-account
       - discovery-server
 
-  account-service-logs:
-    image: busybox
-    container_name: account-service-logs
-    volumes:
-      - ./customer-service/logs:/logs
-    command: "tail -f /logs/account-service.log | nc logstash 5000"
 
   prometheus:
     image: prom/prometheus:v2.37.1
@@ -130,32 +118,3 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=password
-
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.2
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-    ports:
-      - "9200:9200"
-    volumes:
-      - ./elasticsearch/data:/usr/share/elasticsearch/data
-
-  logstash:
-      image: docker.elastic.co/logstash/logstash:7.14.2
-      container_name: logstash
-      volumes:
-        - ./logstash/config:/usr/share/logstash/config
-        - ./logstash/pipeline:/usr/share/logstash/pipeline
-      environment:
-        - "ES_HOST=elasticsearch"
-        - "ES_PORT=9200"
-
-  kibana:
-      image: docker.elastic.co/kibana/kibana:7.14.2
-      container_name: kibana
-      ports:
-        - "5601:5601"
-      environment:
-        - "ELASTICSEARCH_URL=http://elasticsearch:9200"

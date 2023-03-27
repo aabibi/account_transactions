@@ -13,6 +13,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -61,6 +63,21 @@ public class AccountController {
 
     }
 
+
+
+    @ApiOperation(value = "Get All Accounts", notes = "Get account info based on account id in the system.")
+    @GetMapping()
+    public List<Account> getAllAccount() throws UserNotFoundException {
+
+        List<Account> accounts = accountService.getAllAccounts();
+        if (accounts == null) {
+            throw new UserNotFoundException("No accounts found.");
+        }
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        accounts.forEach( account -> accountResponses.add(new AccountResponse(account.getAccountId(), account.getDocument_number(), account.getAccountMoney())));
+        return accounts;
+
+    }
 
     @ApiOperation(value = "Update Account", notes = "Update account information in the system.")
     @PutMapping()
