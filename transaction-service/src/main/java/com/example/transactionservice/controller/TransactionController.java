@@ -77,9 +77,7 @@ public class TransactionController {
         }
 
         List<TransactionResponse> transactionResponses = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            transactionResponses.add(new TransactionResponse(transaction));
-        }
+        transactions.forEach(t -> transactionResponses.add(new TransactionResponse(t)));
 
         return transactionResponses;
 
