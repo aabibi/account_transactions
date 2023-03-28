@@ -13,11 +13,14 @@ import com.example.transactionservice.exception.InvalidTransactionTypeException;
 import com.example.transactionservice.exception.InvalidTransactionException;
 import com.example.transactionservice.exception.UserNotFoundException;
 import com.example.transactionservice.service.TransactionService;
+import com.example.transactionservice.util.Mapper;
 import com.example.transactionservice.util.RestClient;
 import com.example.transactionservice.util.Utils;
 import com.google.gson.Gson;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
@@ -46,6 +49,8 @@ public class TransactionController {
 
     private Tracer tracer;
 
+    Logger logger= LogManager.getLogger(TransactionController.class);
+
 
     public TransactionController(TransactionService transactionService, RestTemplate restTemplate,  Tracer tracer) {
         this.transactionService = transactionService;
@@ -58,10 +63,15 @@ public class TransactionController {
     @GetMapping("/{transactionId}")
     public TransactionResponse getTransaction(@PathVariable long transactionId) throws Exception {
 
+        logger.info("TransactionController:getTransaction execution started..");
         Transaction transaction = transactionService.getTransaction(transactionId);
         if (transaction == null) {
+          //  log.info();
+            logger.info("TransactionController:getTransaction request payload {} Empty,  NO TRANSACTION FOUND");
             throw new InvalidTransactionException("Transaction with id " + transactionId + " not found.");
         }
+        logger.info("TransactionController:getTransaction response  {} ", Mapper.mapToJsonString(transaction));
+        logger.info("TransactionController:getTransaction execution ended..");
         return new TransactionResponse(transaction);
 
     }
@@ -71,6 +81,7 @@ public class TransactionController {
     @GetMapping("/accounts/{accountId}")
     public List<TransactionResponse> getTransactions(@PathVariable long accountId) throws Exception {
 
+        logger.info("TransactionController:getTransactions execution started..");
         List<Transaction> transactions = transactionService.getTransactionByAccountId(accountId);
         if (transactions == null) {
             throw new InvalidTransactionException("Transactions for account id:" + accountId + " not found.");
@@ -79,6 +90,8 @@ public class TransactionController {
         List<TransactionResponse> transactionResponses = new ArrayList<>();
         transactions.forEach(t -> transactionResponses.add(new TransactionResponse(t)));
 
+        logger.info("TransactionController:getTransaction response  {} ", Mapper.mapToJsonString(transactionResponses));
+        logger.info("TransactionController:getTransactions execution ended..");
         return transactionResponses;
 
     }
