@@ -1,5 +1,8 @@
 # Account Service and Transaction Service Microservices
 
+UPDATE BRANCH: ADDING-SPLUNK
+This branch demonstrates using splunk for centralized logging
+
 
 This project consists of two microservices developed using Spring Boot: Account Service and Transaction Service. The purpose of this project is to provide a simple example of how to implement microservices architecture using Spring Boot. And also show some level of distributed transactions.
 
