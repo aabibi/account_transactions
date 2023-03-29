@@ -1,7 +1,7 @@
 # Account Service and Transaction Service Microservices
 
 
-This project consists of two microservices developed using Spring Boot: Account Service and Transaction Service. The purpose of this project is to provide a simple example of how to implement microservices architecture using Spring Boot. And also show some level of distributed transactions.
+This project consists of two microservices developed using Spring Boot: Account Service and Transaction Service. The purpose of this project is to provide a simple example of how to implement microservices architecture using Spring Boot. And also show some level of distributed transactions. This project was upgraded to uses AWS SQS messaging to improve scalibility and demonstrate how a system can be built to handle millions of requests.
 
 # Technologies Used
 Java 11
@@ -9,6 +9,7 @@ Spring Boot 2.7.9
 Spring cloud tools
 Maven 3.8.2
 MySQL 8.0
+AWS SQS
 
 
 **Github** repository location: https://github.com/aabibi/account_transactions
